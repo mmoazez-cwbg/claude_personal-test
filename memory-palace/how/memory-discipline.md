@@ -2,10 +2,11 @@
 name: Auto-commit to memory
 description: Proactively save relevant changes, rules, and context to memory without waiting to be asked
 type: feedback
+originSessionId: 9a6bcfba-e9d4-47eb-97ec-33a1dbbf74bc
 ---
 Automatically save to memory whenever something worth remembering happens — don't wait for the user to ask.
 
-**Why:** Having to ask Claude to remember things is friction. The assistant should be self-maintaining.
+**Why:** The user explicitly requested this. Having to ask Claude to remember things is friction they don't want.
 
 ## Retrieval order — always follow before calling external tools
 1. `MEMORY.md` — quick routes and room index
@@ -14,7 +15,7 @@ Automatically save to memory whenever something worth remembering happens — do
 4. External tool — only if memory has no answer
 
 ## Memory palace structure
-5 rooms under `~/.claude/projects/<encoded-project-path>/memory/`:
+5 rooms under `/Users/mikem/.claude/projects/<encoded-project-path>/memory/`:
 
 | Room | Path | Contents |
 |------|------|----------|
@@ -26,7 +27,7 @@ Automatically save to memory whenever something worth remembering happens — do
 | LOGS | `changelog/` + `actionlog/` | Audit trails (30-day rolling) |
 
 ## How to apply
-- New contact info → write/update `contacts/<name>.md` AND `where/contacts.md` AND `CONTENTS.md`
+- New contact info → write/update `contacts/<name>.md` AND `where/slack-contacts.md` AND `CONTENTS.md`
 - New rules or preferences → `how/*.md`
 - New project context → `what/*.md`
 - New external resource pointers → `where/*.md`
@@ -39,4 +40,4 @@ Automatically save to memory whenever something worth remembering happens — do
 - Don't duplicate — check existing files first, update in place
 - Save mid-conversation, not at the end — never wait to be asked
 
-→ See also: `how/weekly-audit.md`, `how/token-efficiency.md`
+→ See also: `who/mike.md`, `how/weekly-audit.md`
