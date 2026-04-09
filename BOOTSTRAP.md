@@ -1,29 +1,53 @@
-# Claude Code Persistent Ops Assistant — Bootstrap Prompt
+# Claude Ops Assistant — Bootstrap & Setup Guide
 
-> **How to use:**
-> 1. Complete the **Pre-flight** steps below (done once, in your terminal — before opening Claude Code).
-> 2. Open Claude Code in your project directory.
-> 3. Paste the contents of the "BOOTSTRAP PROMPT" section as your first message.
-> Claude will walk you through the rest interactively.
+> **How to use this file:**
+> Open a new Claude Code session in your project directory and run:
+> `Prompt: Parse through /path/to/claude-assistant-bootstrap.md and execute the changes.`
+> Claude will read this file, propose a setup plan, and walk you through it interactively.
 >
 > **Prerequisites:**
 > - Claude Code installed
-> - Docker installed (for Slack/GitHub MCP servers, if used)
-> - `uv` installed (`pip install uv` or `brew install uv`) if using Python-based MCPs
+> - Docker installed (for Slack/GitHub MCP servers)
+> - `uv` installed (`brew install uv` or `pip install uv`) for Python-based MCPs
 > - A project directory created (e.g. `~/my-assistant/`)
 
 ---
 
-## PRE-FLIGHT (do this in your terminal BEFORE opening Claude Code)
+## CLAUDE — PARSE INSTRUCTIONS (read before doing anything else)
 
-`bypassPermissions` must be set before Claude Code starts — otherwise Claude needs approval to write the very file that grants approval (chicken-and-egg). Do this manually once:
+You are setting up a persistent ops assistant for a new user. Follow this exactly:
+
+### 0A — Optimization Analysis
+Before making any changes, read this entire file and compile a short summary:
+- What will be set up automatically vs. what requires user input
+- Any optimizations or additions you'd suggest given the user's context
+- Any steps you can skip if certain tools aren't relevant
+
+Present this as a brief bullet list. Ask the user if they'd like to proceed, adjust scope, or skip anything.
+
+### 0B — Source Selection
+Ask the user:
+
+> "Would you like to:
+> **(A) Pull the base from the public template repo** (`https://github.com/mmoazez-cwbg/claude_personal-test`) — includes pre-built scripts, wrapper templates, memory structure, and known fixes pre-applied. Fastest start.
+> **(B) Build from scratch** — cleaner slate, more manual setup, but nothing inherited you didn't choose.
+>
+> If (A): I'll clone/copy the repo contents, then customize for your environment.
+> If (B): I'll create everything from the steps below."
+
+Wait for their answer before proceeding.
+
+---
+
+## STEP 1 — PERMISSIONS
+
+`bypassPermissions` must be set before Claude Code starts — otherwise Claude needs approval
+to write the very file that grants it. Do this once in your terminal before opening Claude Code:
 
 ```bash
-# Replace ~/my-assistant with your actual project directory path
-PROJECT_DIR=~/my-assistant
+PROJECT_DIR=~/my-assistant   # change to your project path
 
 mkdir -p "$PROJECT_DIR/.claude"
-
 cat > "$PROJECT_DIR/.claude/settings.local.json" << 'EOF'
 {
   "permissions": {
@@ -32,117 +56,147 @@ cat > "$PROJECT_DIR/.claude/settings.local.json" << 'EOF'
   "enableAllProjectMcpServers": true
 }
 EOF
-
-echo "Done. Now open Claude Code in $PROJECT_DIR and paste the bootstrap prompt."
+echo "Done. Open Claude Code in $PROJECT_DIR and paste the bootstrap prompt."
 ```
 
-Then open (or restart) Claude Code pointed at your project directory. The setting is now active for all future sessions in this directory — no re-approval ever needed.
+Then fully restart Claude Code. Claude should verify this is set before proceeding with any setup.
 
----
-
-## BOOTSTRAP PROMPT
-
-*(Copy everything from the horizontal rule below through the end of this file and paste it as your first message)*
-
----
-
-You are being configured as my persistent ops assistant. Follow every instruction in this prompt precisely and in order. Do not skip steps. Do not wait for me to ask you to save things — proactively save everything relevant to memory as we go.
-
----
-
-## STEP 1 — CONFIRM BYPASS PERMISSIONS MODE
-
-Read `.claude/settings.local.json` and confirm it contains `"defaultMode": "bypassPermissions"` and `"enableAllProjectMcpServers": true`.
-
-- If both are present: confirm to me and proceed to Step 2.
-- If the file is missing or incomplete: tell me to stop, run the pre-flight terminal commands from the top of this document, restart Claude Code, and then re-paste this prompt. Do not proceed until confirmed.
-
-> **Why:** `bypassPermissions` eliminates approval prompts for every tool call so you can operate fluidly. `enableAllProjectMcpServers` auto-loads all MCP servers defined in `.mcp.json`. This setting persists across all future sessions in this directory because it lives on disk — not in a session.
+**Verify:** Read `.claude/settings.local.json` and confirm both keys are present.
+If missing — stop and instruct the user to run the above commands, then restart Claude Code.
 
 ---
 
 ## STEP 2 — PERSONALIZATION INTERVIEW
 
-Ask me the following questions **one group at a time** (not all at once). Wait for my answers before continuing to the next group. Use my answers to fill in all placeholders throughout this setup.
+Ask questions **one group at a time**. Wait for answers before the next group.
 
 ### Group A — Identity
-1. What is your full name and preferred name/nickname?
-2. What is your username (e.g. for Slack, email prefix, etc.)?
-3. What is your email address?
-4. What is your role/title?
-5. What company and team are you on?
-6. Who is your manager (name and email)?
-7. What timezone are you in?
+1. Full name and preferred name/nickname?
+2. Username (Slack handle, email prefix)?
+3. Email address?
+4. Role/title?
+5. Company and team?
+6. Manager's name, email, Slack username?
+7. Timezone?
 
-### Group B — The Assistant's Purpose
-1. What will this assistant primarily help you with? (e.g. ops, engineering, support, project management)
-2. What tools/platforms do you use daily? (e.g. Jira, Slack, GitHub, Salesforce, Notion, PagerDuty, etc.)
-3. Do you want a custom persona/name for the assistant when it messages you directly? If yes — give it a name and describe the tone (casual, professional, terse, witty, etc.). If no, it will use your name in a neutral tone.
-4. Are there any communication channels where the assistant should behave differently than elsewhere (e.g. a persona only in DMs)?
+### Group B — Assistant Purpose
+1. What will this assistant primarily help with? (ops, engineering, support, PM, etc.)
+2. Daily tools/platforms? (Jira, Slack, GitHub, PagerDuty, Salesforce, Notion, etc.)
+3. Want a custom persona/name for bot DMs? If yes — name + tone (casual, terse, witty, etc.)
+4. Any channels where the persona should differ? (e.g. formal in group channels, casual in DMs)
 
 ### Group C — Team & Contacts
-1. List your immediate team members (name, role, email if known). If you have a large team, just the ones you interact with most.
-2. Are there any external contacts or vendors the assistant should know about?
+1. Immediate team members (name, role, email if known)?
+2. Any VIPs — people whose messages should trigger immediate alerts? (manager + up to 3 others)
+3. External contacts or vendors to know about?
 
 ### Group D — Tools & Integrations
-1. Which of these MCP servers do you want configured? (I'll guide you through each one)
-   - [ ] Slack (requires Docker; I'll walk you through token extraction)
-   - [ ] GitHub (requires Docker + Personal Access Token)
-   - [ ] Jira/Confluence via Atlassian (available via claude.ai MCP — no local setup needed if connected)
-   - [ ] Gmail/Google Calendar (available via claude.ai MCP)
-   - [ ] Microsoft 365 (available via claude.ai MCP)
-   - [ ] Glean (available via claude.ai MCP — enterprise search)
-   - [ ] Other (specify)
-2. Do you have any asset management or internal tooling APIs you'd like connected? (e.g. Snipe-IT, ServiceNow, etc.)
+Which MCP servers to configure?
+- [ ] Slack (Docker + session tokens — I'll walk you through extraction)
+- [ ] GitHub (Docker + Personal Access Token)
+- [ ] Atlassian/Jira/Confluence (claude.ai MCP connector — no local setup)
+- [ ] Gmail / Google Calendar (claude.ai MCP connector)
+- [ ] Microsoft 365 (claude.ai MCP connector)
+- [ ] Glean (claude.ai MCP connector — enterprise search)
+- [ ] Snipe-IT or other asset/ITSM tool (API-based)
+- [ ] Other (specify)
 
-### Group E — Service Accounts & Credentials
-1. Do you have any service accounts, API tokens, or credentials with expiry dates I should track? (List name, expiry date if known)
-2. Where do you store secrets currently? (e.g. macOS Keychain, 1Password, plain `.env` file)
+### Group E — Credentials & Expiry
+1. Service accounts or API tokens with expiry dates? (name + expiry)
+2. Where do you store secrets? (macOS Keychain, 1Password, plain `.env`)
 
-### Group F — Scheduled Automation
-1. Do you want a **daily briefing** emailed/messaged to you? If yes — what should it include? (e.g. open tickets, calendar events, team activity)
-2. Do you want a **weekly memory audit** (I'll verify that my stored facts are still accurate and email you findings)?
-3. Any other recurring automations you want? (e.g. reminders, reports, health checks)
+### Group F — Scheduling
+1. Want a **daily briefing**? What should it cover?
+2. Want a **weekly memory audit** (I verify stored facts against live data, email findings)?
+3. Other recurring automations?
 
 ---
 
-## STEP 3 — MEMORY PALACE SETUP
+## STEP 3 — PROJECT STRUCTURE
 
-After the interview, create the following directory structure under the Claude project memory directory for this project. The memory directory is at:
-`~/.claude/projects/<encoded-project-path>/memory/`
+Create this layout (skip anything from the template repo if using option A):
 
-You can find the encoded path by running: `ls ~/.claude/projects/`
-
-Create this structure:
 ```
-memory/
-├── MEMORY.md          ← palace index (loaded every session)
-├── CONTENTS.md        ← detailed per-file inventory for fast fact lookup
-├── who/
-│   └── <user>.md      ← operator identity, style, preferences
-├── how/
-│   ├── memory-discipline.md   ← retrieval rules, auto-save rules
-│   ├── token-efficiency.md    ← terse responses, batch ops
-│   └── weekly-audit.md        ← audit checklist
-├── what/
-│   ├── current-state.md       ← live ops state, known issues
-│   └── config.md              ← MCP setup, settings state
-├── fix/               ← known issues and solutions (add as they arise)
-├── where/
-│   └── contacts.md            ← team Slack IDs, emails, DM channel IDs
-├── contacts/          ← one file per person: <firstname-lastname>.md
-├── changelog/
-│   └── YYYY-MM-DD.md  ← rolling 30-day log of memory/config changes
-└── actionlog/
-    └── YYYY-MM-DD.md  ← rolling 30-day log of external actions taken
+<project-root>/
+├── .env                        # ALL secrets — never commit
+├── .gitignore                  # Must include .env, ca-bundle.pem, *.lock
+├── .claude/
+│   └── settings.local.json     # bypassPermissions + enableAllProjectMcpServers
+├── .mcp.json                   # MCP server definitions
+├── CLAUDE.md                   # Session checklist — loaded every session
+├── memory/                     # Git-tracked palace snapshot (synced from ~/.claude)
+│   ├── MEMORY.md               # Index — always loaded
+│   ├── CONTENTS.md             # Fact index for fast lookup
+│   ├── who/                    # User identity + preferences
+│   ├── how/                    # Behavioral rules
+│   ├── what/                   # Project context and state
+│   ├── fix/                    # Known issues and solutions
+│   ├── where/                  # External IDs, contacts, pointers
+│   ├── contacts/               # One file per person: <firstname-lastname>.md
+│   ├── changelog/              # YYYY-MM-DD.md — rolling 30-day
+│   └── actionlog/              # YYYY-MM-DD.md — rolling 30-day
+├── tars-support/scripts/
+│   └── extract-slack-tokens.py # Token extractor (see Step 6)
+├── sync-memory.sh              # Syncs Claude memory → git-tracked memory/
+├── slack-mcp-wrapper.sh
+├── github-mcp-wrapper.sh
+└── snipeit-mcp-wrapper.sh      # Optional
 ```
 
-### MEMORY.md format
+### .gitignore (minimum)
+```
+.env
+ca-bundle.pem
+*.lock
+.DS_Store
+__pycache__/
+*.pyc
+```
+
+---
+
+## STEP 4 — CLAUDE.md TEMPLATE
+
+Create in project root. Loaded every session automatically.
+
+```markdown
+# CLAUDE.md — [Project Name]
+
+## Environment
+- Timezone: [user timezone]
+- Env file: .env contains all credentials
+- [Tool-specific URLs, workspace IDs, etc.]
+
+## Session Start Checklist
+At the start of each session, proactively:
+1. **MCP health check** — auto-fix before escalating. See `memory/how/mcp-health-monitoring.md`.
+2. **Inbox check** — mentions + VIP DMs past 24h; re-surface `/tmp/slack_monitor_pending.txt`.
+   Then start two CronCreate jobs (session-only, must be recreated each session — user does not do this).
+   See `memory/how/inbox-monitoring.md`.
+3. Check `memory/where/contacts.md` for any new contacts needed.
+4. Flag if any service account token expiry is within 30 days — see `memory/what/service-accounts.md`.
+
+**Pending messages:** Never auto-clear. Remove from `/tmp/slack_monitor_pending.txt` only when user explicitly confirms handled.
+
+## Key Rules
+[Fill in: Always X before Y. Never Z without W. etc.]
+
+## Reference Data
+[Tables of IDs, field names specific to your tools]
+```
+
+---
+
+## STEP 5 — MEMORY PALACE
+
+Create in `~/.claude/projects/<encoded-project-path>/memory/`.
+Find encoded path: `ls ~/.claude/projects/`
+
+### MEMORY.md (palace index)
 ```markdown
 # Memory Palace
 
-> **ALWAYS CHECK MEMORY FIRST** — retrieval order: `MEMORY.md → CONTENTS.md → file → external tool`
-> For specific facts, read `CONTENTS.md` before opening individual files or calling external tools.
+> **ALWAYS CHECK MEMORY FIRST** — retrieval order: MEMORY.md → CONTENTS.md → file → external tool
 
 ## Entrance — Quick Routes
 | Query type | Go to |
@@ -152,411 +206,502 @@ memory/
 | What is this project / current state? | `what/` |
 | Something broken / known issue? | `fix/` |
 | External IDs, contacts, pointers? | `where/` |
-| Specific fact (name, ID, rule)? | `CONTENTS.md` |
-
----
+| Specific fact? | `CONTENTS.md` |
 
 ## Room 1 — WHO
-[list files as: - [Title](path) — one-line hook]
+- [User profile](who/user.md)
 
 ## Room 2 — HOW
-...
+- [MCP health monitoring](how/mcp-health-monitoring.md)
+- [Inbox monitoring](how/inbox-monitoring.md)
+- [Messaging preferences](how/messaging-preferences.md)
+- [Git commit cadence](how/git-commits.md)
+- [No secrets in commits](how/no-secrets-in-commits.md)
+- [Memory discipline](how/memory-discipline.md)
+- [Token efficiency](how/token-efficiency.md)
 
 ## Room 3 — WHAT
-...
+- [Project overview](what/overview.md)
+- [Current state](what/current-state.md)
+- [Config](what/config.md)
+- [Service accounts](what/service-accounts.md)
 
 ## Room 4 — FIX
-...
+- [Slack TLS](fix/slack-tls.md)
+- [Slack auth self-healing](fix/slack-auth-selfheal.md)
+- [Slack UA extraction bug](fix/slack-ua-bug.md)
+- [GitHub MCP cold-start](fix/github-mcp-coldstart.md)
 
 ## Room 5 — WHERE
-...
+- [Contacts](where/contacts.md)
 
 ## Scheduled Triggers (remote, cloud)
-[list any triggers created: - **Name** — schedule → description (trigger_id)]
 - Manage at: https://claude.ai/code/scheduled
-
-## Logs (rolling)
-- [Changelog](changelog/YYYY-MM-DD.md) — memory/config changes (30-day retention)
-- [Action log](actionlog/YYYY-MM-DD.md) — external actions taken (30-day retention)
 ```
 
-### Memory file frontmatter (all memory files)
+### Memory file frontmatter (every file)
 ```markdown
 ---
 name: <short name>
-description: <one-line description — what fact does this file answer?>
+description: <one-line description>
 type: user | feedback | project | reference
 ---
-<content>
-```
-
-### Memory types
-| Type | Use for |
-|------|---------|
-| `user` | Who the operator is, their style, role, preferences |
-| `feedback` | Rules and corrections — what to do and not do |
-| `project` | Ongoing work, current state, config, contacts |
-| `reference` | Pointers to external systems (IDs, URLs, sheet links) |
-
----
-
-## STEP 4 — BEHAVIORAL RULES
-
-Write the following rules into `how/memory-discipline.md` and `how/token-efficiency.md`:
-
-### memory-discipline.md
-- **Retrieval order:** MEMORY.md → CONTENTS.md → specific file → external tool. Never skip ahead.
-- **Auto-save:** Save to memory proactively — never wait to be asked. If something worth remembering happens, write it immediately.
-- **No duplication:** Check existing files before writing. Update in place, don't create duplicates.
-- **Update both index files:** Every new memory file must be added to MEMORY.md and CONTENTS.md.
-- **Cross-references:** Add `→ See also:` links at the bottom of each file.
-- **Changelog discipline:** Log every memory/config change to `changelog/YYYY-MM-DD.md` as it happens.
-- **Action log discipline:** Log every external action (Slack DMs, Jira tickets, emails, searches) to `actionlog/YYYY-MM-DD.md` as it happens.
-- **30-day rolling retention:** Delete changelog and actionlog entries older than 30 days during weekly audits.
-
-### token-efficiency.md
-- Responses: say it in one sentence when possible — no preamble, no trailing summaries.
-- Reads: use CONTENTS.md to pinpoint the right file before opening it. Never re-read a file already read this session.
-- Operations: batch parallel tool calls wherever possible.
-- Memory writes: use Edit over Write (sends diff only); don't rewrite whole files.
-- Don't re-explain completed actions — the user can see the tool calls.
-
-### weekly-audit.md
-```
-Run weekly to prevent memory rot. Goal: any common question answered in ≤2 reads.
-
-Checklist:
-1. Verify MEMORY.md index matches actual files on disk — fix broken links, missing entries
-2. Verify CONTENTS.md data points match current file contents — update stale facts
-3. Prune stale data — passed dates, resolved incidents, outdated config
-4. Consolidate redundant small files
-5. Changelog/actionlog cleanup — delete entries older than 30 days
-6. Retrieval test — pick 5 common query types, confirm each resolves in ≤2 reads
 ```
 
 ---
 
-## STEP 5 — CLAUDE.md (PROJECT CONTEXT)
+## STEP 6 — CORE HOW-TO FILES
 
-Create a `CLAUDE.md` file in the **project root directory** (not the memory directory). This file is auto-loaded by Claude Code at every session start. Populate it with project-specific context gathered from the interview.
+Write these into `how/`:
 
-Template:
-```markdown
-# CLAUDE.md — [Project Name]
+### `how/mcp-health-monitoring.md`
+At session start, verify all MCP servers before doing anything else.
 
-## Environment
-- Timezone: [user timezone]
-- Env file: .env contains all credentials
-- [Any tool-specific URLs, workspace IDs, etc.]
+**Slack MCP** (`mcp__slack__channels_list` limit 1):
+- `invalid_auth` → self-heal (see `fix/slack-auth-selfheal.md`)
+- Uses korotovsky/slack-mcp-server via Docker — NOT the built-in claude.ai Slack MCP
 
-## Key Rules
-[List the 3-5 most important rules for this assistant to follow. Examples:]
-- Always [action] before [other action]
-- Never [action] without [condition]
-- When [event] occurs, [response]
+**GitHub MCP** (`mcp__github__get_me`):
+- Tools missing → `docker pull ghcr.io/github/github-mcp-server` then `/mcp` restart
 
-## Reference Data
-[Tables of IDs, field names, or lookup data specific to your tools]
-| Item | Value |
-|------|-------|
-| ... | ... |
+**Other MCPs:** If tools missing from system-reminder, check wrapper script and restart.
 
-## Session Start Checklist
-At the start of each session, proactively:
-1. Check memory/where/contacts.md for team updates
-2. [Any time-sensitive checks — token expiry, open incidents, etc.]
-3. Flag if today is within 30 days of any known expiry date
+Always attempt auto-fix. Only escalate to user if fix fails after one attempt.
 
-## Key Channel / Resource IDs
-| Resource | ID |
-|----------|----|
-| [name] | [id] |
-```
+### `how/inbox-monitoring.md`
+At session start: search Slack for high-priority messages (past 24h), then start two CronCreate jobs.
 
----
+**VIP users (fill in for your org):**
+- Your manager — DM messages + thread replies
+- Key stakeholders
 
-## STEP 6 — MCP SERVERS
+**Session crons (auto-create at session start each time — session-only, not durable):**
+- Every 1 min: mentions + VIP DMs; re-surface pending; silent if nothing
+- Every 6 hours: VIP relationship check (poll `vip_users` from Slack prefs, update memory if changed)
 
-Create a `.mcp.json` file in the project root. Start with an empty structure and add servers as configured:
-```json
-{
-  "mcpServers": {}
-}
-```
+**Pending tracking:**
+- New message found → write to `/tmp/slack_monitor_seen.txt` (dedup) AND `/tmp/slack_monitor_pending.txt` (display)
+- Every cron run: re-display all pending items until user confirms
+- Never auto-clear — only remove after explicit user confirmation
+- Format: `ts|||label|||summary`
 
-Create a `.env` file in the project root for credentials:
-```bash
-# .env — credentials (never commit this file)
-# Add API tokens here as you configure each MCP
-```
+**Channel follow-up:**
+After clearing a VIP channel from pending, re-check that channel for new activity before treating as done.
 
-Then walk me through each MCP I selected in the interview.
+### `how/git-commits.md`
+Commit after each meaningful change during a session — not just at the end.
+Never commit `.env` or any file containing secrets/tokens/API keys.
+
+### `how/no-secrets-in-commits.md`
+Never commit secrets: API keys, bearer tokens, session cookies, passwords, .env files.
+Audit staged files with `git diff --cached` before every commit.
+
+### `how/messaging-preferences.md`
+Fill in per user preferences. Common rules:
+- For personal/social messages, always DM — never post to a channel
+- If no DM channel exists, open one via `conversations.open` API autonomously
+- Save returned channel ID to contacts memory immediately
+- Never ask user to open the DM themselves
 
 ---
 
-### MCP: Slack
+## STEP 7 — KNOWN FIXES
 
-**Requirements:** Docker, Slack account with access to the workspace.
+Write these into `fix/`:
 
-#### Step 1 — Extract Slack tokens
+### `fix/slack-auth-selfheal.md`
+When Slack MCP returns `invalid_auth` — handle autonomously, never ask user to run `/mcp`:
 
-Slack uses two session tokens (`xoxc-` and `xoxd-`) that refresh periodically. The cleanest way to extract them is from the running Slack desktop app's local storage.
-
-On macOS, run the following in terminal to get your tokens:
+1. Re-extract tokens:
 ```bash
-# Find Slack's leveldb storage
-ls ~/Library/Application\ Support/Slack/Local\ Storage/leveldb/
+source .env
+SLACK_SAFE_STORAGE_PASSWORD=$(security find-generic-password -s "Slack Safe Storage" -w) \
+  uv run tars-support/scripts/extract-slack-tokens.py
+```
+2. Kill the running container:
+```bash
+docker ps --filter "ancestor=ghcr.io/korotovsky/slack-mcp-server" \
+  --format "{{.ID}}" | xargs -r docker kill
+```
+3. Retry — Claude Code restarts the subprocess with fresh tokens automatically.
+4. If extracted tokens are still invalid: Slack desktop app is signed out. Ask user to sign in, then redo step 1.
 
-# Extract tokens (requires Slack to be running)
-# xoxc token:
-strings ~/Library/Application\ Support/Slack/Local\ Storage/leveldb/*.ldb 2>/dev/null | grep -o 'xoxc-[^"]*' | head -1
+### `fix/slack-ua-bug.md`
+Slack leveldb stores User-Agent as JSON context. Raw extraction may include an embedded `"` character, e.g.:
+`...Slack_SSB/4.48.102","sdkVersion"...`
 
-# xoxd token (from cookies):
-strings ~/Library/Application\ Support/Slack/Cookies 2>/dev/null | grep -o 'xoxd-[^"]*' | head -1
+If the UA is split at this quote, the token is truncated → Slack rejects auth and may
+invalidate the desktop session.
+
+**Fix in `tars-support/scripts/extract-slack-tokens.py`** — after extracting the UA:
+```python
+ua = ua.split('"')[0].strip()
 ```
 
-Alternatively, open Chrome DevTools while in Slack web app → Application → Cookies → find `d` (xoxd) and Local Storage → find `localConfig_v2` (contains xoxc).
+**Verify:** `SLACK_MCP_USER_AGENT` in `.env` should be a single clean UA string with no embedded quotes.
 
-Save the tokens to `.env`:
+### `fix/slack-tls.md`
+Slack MCP Docker container fails with x509 certificate error (ISRG Root X1 / Let's Encrypt).
+Common on enterprise Slack domains.
+
+Fix — mount system CA bundle into the container in `slack-mcp-wrapper.sh`:
 ```bash
-SLACK_MCP_XOXC_TOKEN=xoxc-...
-SLACK_MCP_XOXD_TOKEN=xoxd-...
-SLACK_MCP_USER_AGENT=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36
+-v "/path/to/ca-bundle.pem:/etc/ssl/certs/ca-certificates.crt:ro"
 ```
 
-#### Step 2 — Handle TLS (if on a corporate Slack domain)
-
-Corporate Slack Enterprise workspaces often use Let's Encrypt certificates that the Docker container doesn't trust. Fix:
+Generate `ca-bundle.pem`:
 ```bash
-# Export macOS system CA bundle
 security find-certificate -a -p /Library/Keychains/System.keychain > ca-bundle.pem
 security find-certificate -a -p /System/Library/Keychains/SystemRootCertificates.keychain >> ca-bundle.pem
 ```
 
-If the error recurs after an OS update, re-run the above commands and restart Claude Code.
+### `fix/github-mcp-coldstart.md`
+GitHub MCP tools missing on first session — Docker image not pre-pulled.
 
-#### Step 3 — Create wrapper script
-
-Create `slack-mcp-wrapper.sh`:
+Fix:
 ```bash
-#!/bin/bash
-source /PATH/TO/YOUR/PROJECT/.env
+docker pull ghcr.io/github/github-mcp-server
+```
+Then `/mcp` to restart. Tools appear on next start.
+
+---
+
+## STEP 8 — SLACK MCP SETUP
+
+Uses korotovsky/slack-mcp-server (Docker) — full session access including DMs + private channels.
+The built-in claude.ai Slack MCP uses bot tokens and lacks DM/private channel access.
+
+### Token extraction (`tars-support/scripts/extract-slack-tokens.py`)
+
+This script extracts `xoxc` + `xoxd` tokens and User-Agent from macOS Keychain + leveldb.
+It must apply the UA bug fix (split at embedded `"`) before writing to `.env`.
+
+Pseudocode for the script:
+```python
+import subprocess, os, re
+
+# Extract xoxc from leveldb
+# (use leveldb reader or parse .ldb files for xoxc- prefixed strings)
+
+# Extract xoxd from Cookies SQLite
+# (query cookies.db for name='d', value starting with xoxd-)
+
+# Extract User-Agent from leveldb JSON context
+# CRITICAL: strip at embedded quote
+ua = raw_ua_from_leveldb.split('"')[0].strip()
+
+# Write to .env
+env_path = os.path.join(os.path.dirname(__file__), '../../.env')
+# Update SLACK_MCP_XOXC_TOKEN, SLACK_MCP_XOXD_TOKEN, SLACK_MCP_USER_AGENT in .env
+```
+
+**Manual extraction fallback:**
+```bash
+# xoxc (from leveldb):
+strings ~/Library/Application\ Support/Slack/Local\ Storage/leveldb/*.ldb 2>/dev/null \
+  | grep -o 'xoxc-[^"]*' | head -1
+
+# xoxd (from Cookies SQLite):
+python3 -c "
+import sqlite3
+db = os.path.expanduser('~/Library/Application Support/Slack/Cookies')
+conn = sqlite3.connect(db)
+rows = conn.execute(\"SELECT value FROM cookies WHERE name='d'\").fetchall()
+print(rows[0][0] if rows else 'not found')
+"
+```
+
+After extraction, always verify `SLACK_MCP_USER_AGENT` is not truncated.
+
+### `slack-mcp-wrapper.sh`
+```bash
+#!/usr/bin/env bash
+set -a; source "$(dirname "$0")/.env"; set +a
 
 exec docker run -i --rm \
   -v "${HOME}/.cache/slack-mcp-server:/root/.cache/slack-mcp-server" \
-  -v "/PATH/TO/YOUR/PROJECT/ca-bundle.pem:/etc/ssl/certs/ca-certificates.crt:ro" \
+  -v "$(dirname "$0")/ca-bundle.pem:/etc/ssl/certs/ca-certificates.crt:ro" \
   -e "SLACK_MCP_CACHE_TTL=24h" \
   -e "SLACK_MCP_USER_AGENT=${SLACK_MCP_USER_AGENT}" \
   -e "SLACK_MCP_XOXC_TOKEN=${SLACK_MCP_XOXC_TOKEN}" \
   -e "SLACK_MCP_XOXD_TOKEN=${SLACK_MCP_XOXD_TOKEN}" \
   -e "SLACK_MCP_ADD_MESSAGE_TOOL=true" \
-  "ghcr.io/korotovsky/slack-mcp-server:v1.1.28@sha256:6ccb90df28979737fe27ffbef5e4fb7d78da77cae719dacb94b9e941bfae6000" \
+  "ghcr.io/korotovsky/slack-mcp-server:v1.1.28" \
   mcp-server --transport stdio
 ```
-```bash
-chmod +x slack-mcp-wrapper.sh
-```
 
-> **If you don't need the TLS fix** (personal/standard Slack workspace), remove the `-v ca-bundle.pem` line from the docker run command.
+If not on a corporate TLS domain, remove the `-v ca-bundle.pem` line.
 
-#### Step 4 — Add to .mcp.json
+### `.mcp.json` entry
 ```json
 "slack": {
   "command": "bash",
-  "args": ["/PATH/TO/YOUR/PROJECT/slack-mcp-wrapper.sh"]
+  "args": ["/absolute/path/to/slack-mcp-wrapper.sh"]
 }
 ```
 
-#### Token refresh
-Slack tokens expire. When you see `invalid_auth` errors:
-1. Re-extract tokens (Step 1 above)
-2. Update `.env`
-3. Run `/mcp` in Claude Code to restart the server
-
-**Rule:** Never use curl to call Slack APIs directly — always use `mcp__slack__*` tools.
+### Opening new DM channels autonomously
+The MCP has no `conversations.open` tool. Use curl directly (required for first DM only):
+```bash
+source .env
+curl -s -X POST "https://slack.com/api/conversations.open" \
+  -H "Authorization: Bearer $SLACK_MCP_XOXC_TOKEN" \
+  -H "Cookie: d=$SLACK_MCP_XOXD_TOKEN" \
+  -H "User-Agent: $SLACK_MCP_USER_AGENT" \
+  -H "Content-Type: application/json" \
+  -d '{"users": "UXXXXXXX"}' | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['channel']['id'] if d.get('ok') else d)"
+```
+**The User-Agent header is required** — Slack rejects without it.
+Save the returned channel ID to `where/contacts.md`. All future messages use MCP, not curl.
 
 ---
 
-### MCP: GitHub
+## STEP 9 — INBOX MONITORING CRON
 
-**Requirements:** Docker, GitHub Personal Access Token.
+This is the 1-minute message monitor cron. Create it at session start via `CronCreate`.
+Prompt prefix **must** include a human-readable name (e.g. `slack-message-monitor —`).
 
-#### Step 1 — Create a PAT
-GitHub → Settings → Developer settings → Personal access tokens → Generate new token (classic)
-- Scopes: `repo`, `read:org`, `read:user` (adjust to your needs)
-- Set expiry to 1 year, note the date
-
-Save to `.env`:
 ```bash
-GITHUB_PERSONAL_ACCESS_TOKEN=ghp_...
+slack-message-monitor — Run this Bash command. If there is NO output, do absolutely
+nothing — do not respond, do not say anything. Only surface output if something prints.
+
+source /path/to/project/.env
+SEEN_FILE="/tmp/slack_monitor_seen.txt"
+PENDING_FILE="/tmp/slack_monitor_pending.txt"
+touch "$SEEN_FILE" "$PENDING_FILE"
+
+PENDING_OUT=$(python3 -c "
+import os
+pf = '/tmp/slack_monitor_pending.txt'
+lines = [l.strip() for l in open(pf) if l.strip()] if os.path.exists(pf) else []
+if lines:
+    print('=== PENDING (unconfirmed) ===')
+    for line in lines:
+        parts = line.split('|||', 2)
+        if len(parts) == 3:
+            _, lbl, summary = parts
+            print(f'  [{lbl}] {summary}')
+    print('============================')
+")
+[ -n "$PENDING_OUT" ] && printf "%s\n" "$PENDING_OUT"
+
+check() {
+  local QUERY="$1"; local LABEL="$2"; local RESULT
+  RESULT=$(curl -s "https://slack.com/api/search.messages?query=$(python3 -c "import urllib.parse; print(urllib.parse.quote('$QUERY'))")&sort=timestamp&sort_dir=desc&count=10" \
+    -H "Authorization: Bearer $SLACK_MCP_XOXC_TOKEN" \
+    -H "Cookie: d=$SLACK_MCP_XOXD_TOKEN" \
+    -H "User-Agent: $SLACK_MCP_USER_AGENT" | \
+  python3 -c "
+import sys, json, os
+seen_file = '$SEEN_FILE'; pending_file = '$PENDING_FILE'; label = '$LABEL'
+seen = set(open(seen_file).read().splitlines()) if os.path.exists(seen_file) else set()
+d = json.load(sys.stdin)
+msgs = d.get('messages', {}).get('matches', [])
+new_seen = []; out = []; pending_lines = []
+for m in msgs:
+    msg_id = m.get('ts','')
+    if msg_id and msg_id not in seen:
+        u = m.get('username', m.get('user','?'))
+        ch = m.get('channel', {}).get('name', '?')
+        txt = m.get('text','')[:120]
+        thread = ' [thread]' if m.get('ts') != m.get('thread_ts', m.get('ts')) else ''
+        summary = u + ' #' + ch + thread + ': ' + txt
+        out.append(summary); new_seen.append(msg_id)
+        pending_lines.append(msg_id + '|||' + label + '|||' + summary)
+if new_seen:
+    with open(seen_file, 'a') as f: f.write('\n'.join(new_seen) + '\n')
+    with open(pending_file, 'a') as f: f.write('\n'.join(pending_lines) + '\n')
+print('\n'.join(out))
+")
+  [ -n "$RESULT" ] && printf "NEW — %s:\n%s\n" "$LABEL" "$RESULT"
+}
+
+OUT=""
+OUT+=$(check "<@YOUR_SLACK_USER_ID>" "MENTION")
+OUT+=$(check "<@YOUR_SLACK_USER_ID> is:thread" "MENTION (thread reply)")
+OUT+=$(check "from:YOUR_MANAGER_HANDLE in:@YOUR_HANDLE" "VIP DM - Manager")
+OUT+=$(check "from:YOUR_MANAGER_HANDLE is:thread" "VIP Thread - Manager")
+printf "%s" "$OUT"
 ```
 
-#### Step 2 — Create wrapper script
+**Customize:** Replace `YOUR_SLACK_USER_ID`, `YOUR_MANAGER_HANDLE`, `YOUR_HANDLE`.
+Find your user ID in Slack → Profile → ⋮ More → Copy member ID.
 
-Create `github-mcp-wrapper.sh`:
+---
+
+## STEP 10 — MEMORY SYNC WORKFLOW
+
+### `sync-memory.sh`
+Copies Claude's internal memory (`~/.claude/projects/<encoded>/memory/`) into the
+git-tracked `memory/` directory so you can commit and version-control it.
+
 ```bash
-#!/bin/bash
-source /PATH/TO/YOUR/PROJECT/.env
+#!/usr/bin/env bash
+set -euo pipefail
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TARGET="$SCRIPT_DIR/memory"
+ENCODED=$(ls "$HOME/.claude/projects/" | grep "$(echo "$SCRIPT_DIR" | sed 's|/|-|g' | sed 's|^-||')" 2>/dev/null | head -1)
+[ -z "$ENCODED" ] && echo "ERROR: Claude project memory not found" >&2 && exit 1
+SOURCE="$HOME/.claude/projects/$ENCODED/memory"
+[ ! -d "$SOURCE" ] && echo "ERROR: Memory source not found: $SOURCE" >&2 && exit 1
+rsync -av --delete "$SOURCE/" "$TARGET/"
+echo "Sync complete."
+if [[ "${1:-}" == "--commit" ]]; then
+  cd "$SCRIPT_DIR"
+  git add memory/
+  git diff --cached --quiet || git commit -m "chore: sync memory palace snapshot"
+fi
+```
+
+Run `./sync-memory.sh --commit` before pushing to capture memory changes.
+
+---
+
+## STEP 11 — GITHUB MCP SETUP
+
+### Create a Personal Access Token
+GitHub → Settings → Developer settings → Personal access tokens → New token
+- Scopes: `repo`, `read:org`, `read:user`
+- Expiry: 1 year — log the expiry in `what/service-accounts.md`
+
+### `github-mcp-wrapper.sh`
+```bash
+#!/usr/bin/env bash
+set -a; source "$(dirname "$0")/.env"; set +a
 exec docker run -i --rm \
   -e GITHUB_PERSONAL_ACCESS_TOKEN \
   "ghcr.io/github/github-mcp-server"
 ```
-```bash
-chmod +x github-mcp-wrapper.sh
-```
 
-#### Step 3 — Add to .mcp.json
+### `.mcp.json` entry
 ```json
 "github": {
   "command": "bash",
-  "args": ["/PATH/TO/YOUR/PROJECT/github-mcp-wrapper.sh"]
+  "args": ["/absolute/path/to/github-mcp-wrapper.sh"]
 }
 ```
 
-#### Step 4 — Track expiry
-Add the PAT expiry to your service account tracker in memory. Set a scheduled reminder 30 days before expiry (covered in Step 8).
+**Cold-start fix:** If tools are missing on first session, run `docker pull ghcr.io/github/github-mcp-server` then restart.
 
 ---
 
-### MCP: Other API-Based Tools (e.g. Snipe-IT, ServiceNow, PagerDuty)
+## STEP 12 — CLOUD MCP CONNECTORS
 
-Most REST APIs can be connected via a uvx-based MCP or a custom wrapper. General pattern:
+Connect at `https://claude.ai/settings/connectors` — no local setup needed.
+Available in Claude Code sessions and usable in remote triggers.
 
-```bash
-#!/bin/bash
-# generic-api-mcp-wrapper.sh
-source /PATH/TO/YOUR/PROJECT/.env
-export API_URL=https://your-tool.example.com
-export API_TOKEN=$YOUR_API_TOKEN
-exec uvx --from git+https://github.com/AUTHOR/TOOL-mcp TOOL-mcp
-```
-
-Search for community MCP packages: `https://github.com/topics/mcp-server`
-
----
-
-### MCP: Cloud Connectors (via claude.ai)
-
-These require no local setup — connect them at `https://claude.ai/settings/connectors` and they're available automatically:
-
-| Service | What it gives you |
-|---------|------------------|
-| Atlassian | Jira tickets, Confluence pages |
-| Gmail | Read/draft/search emails |
+| Service | Gives you |
+|---------|-----------|
+| Atlassian | Jira tickets, Confluence pages, search |
+| Gmail | Read, draft, search, send email |
 | Google Calendar | Events, scheduling, free-time finder |
 | Microsoft 365 | Outlook, Teams, SharePoint |
 | Glean | Enterprise search across all internal tools |
 
-Once connected, they're available in Claude Code sessions and can be attached to scheduled remote triggers.
-
 ---
 
-## STEP 7 — SCHEDULED REMOTE TRIGGERS
+## STEP 13 — SCHEDULED REMOTE TRIGGERS
 
-Remote triggers run Claude Code agents in Anthropic's cloud on a cron schedule. They can check things, send emails, post to Slack (if configured), and run audits — without you doing anything.
+Run Claude agents in Anthropic's cloud on a cron schedule. No local process needed.
 
-**Important constraints:**
+**Constraints:**
 - Minimum interval: 1 hour
-- Remote agents cannot access your local files — embed needed context in the prompt
-- Remote agents can use cloud MCP connectors (Atlassian, Gmail, Glean, etc.) but not local MCPs (Slack Docker, etc.)
-- Cron expressions are in **UTC** — always convert your local time
+- Cron expressions in UTC
+- Can use cloud MCP connectors (Gmail, Atlassian, Glean), not local Docker MCPs
+- Embed all needed context in the trigger prompt
 
-Use the `RemoteTrigger` tool (built into Claude Code) to create triggers. Ask Claude to create them for you by describing what you want.
+**Recommended triggers:**
 
-### Recommended triggers to create:
+1. **Weekly Memory Audit** — Mondays at your preferred time
+   Verifies key facts from memory against live data; emails findings report.
 
-**1. Weekly Memory Audit**
-- Schedule: Mondays at your preferred time
-- What it does: verifies key facts from your memory palace against live data (Glean, Jira, etc.), emails you a concise findings report
-- MCP connectors: Gmail + Glean + Atlassian (if applicable)
+2. **Token/Credential Expiry Reminders** — 30 days before each known expiry
+   Emails renewal steps for a specific token or service account.
 
-**2. Credential/Token Expiry Reminders**
-- Schedule: 30 days before each expiry date (or annually for recurring tokens)
-- What it does: emails you renewal instructions for a specific token/account
-- MCP connectors: Gmail only
+3. **Daily Briefing** (optional) — weekday mornings
+   Open tickets, calendar summary, team activity digest.
 
-**3. Daily Briefing** (optional)
-- Schedule: weekdays at your start-of-day time
-- What it does: summarizes open tickets, today's calendar, recent activity
-- MCP connectors: Gmail + Atlassian + Google Calendar (or M365)
+4. **Slack Inbox Monitor** (between sessions) — hourly at :07
+   Searches Gmail for Slack notification emails (mentions, DMs); emails if found.
+   Supplements the in-session 1-minute cron for when Claude Code isn't open.
 
-To create any trigger, say: "Create a [name] trigger that [description] on [schedule]."
+To create: "Create a [name] trigger that [description] on [schedule]."
+Manage all triggers: `https://claude.ai/code/scheduled`
 
 ---
 
-## STEP 8 — .env SECURITY
+## STEP 14 — PERSISTENT BEHAVIOR RULES
 
-The `.env` file contains credentials. Protect it:
+These should be written into `how/` memory files so they apply every session automatically:
 
-```bash
-# Add to .gitignore if this is a git repo
-echo ".env" >> .gitignore
-echo "ca-bundle.pem" >> .gitignore
-
-# Restrict permissions
-chmod 600 .env
-```
-
-Never commit `.env` or any file containing tokens to version control.
+1. **Self-healing MCP auth** — Never ask user to run `/mcp`. Re-extract → kill container → retry.
+2. **Pending messages never auto-clear** — Remove only after explicit user confirmation.
+3. **Channel follow-up** — After clearing a VIP channel from pending, re-check for new activity.
+4. **Session crons are auto-created** — Start inbox monitoring crons at session start, every session. User never does this manually.
+5. **Git commits throughout session** — Commit after each meaningful change, not just at end.
+6. **No secrets in commits** — Always `git diff --cached` before committing.
+7. **DMs for personal messages** — Never post to a channel for social/personal messages.
+8. **New DM channels** — Open via `conversations.open` curl autonomously; save ID to contacts; use MCP for all subsequent messages.
+9. **Terse responses** — Lead with action. No preamble, no trailing summaries.
+10. **Memory auto-save** — Save new facts to memory proactively; never wait to be asked.
 
 ---
 
-## STEP 9 — VERIFY SETUP
+## STEP 15 — VERIFY SETUP
 
-Once all steps are complete, run through this checklist with me:
+After all steps, run through this checklist:
 
-- [ ] `.claude/settings.local.json` has `bypassPermissions` and `enableAllProjectMcpServers`
+- [ ] `.claude/settings.local.json` has `bypassPermissions` + `enableAllProjectMcpServers`
 - [ ] Memory palace created with all 5 rooms + MEMORY.md + CONTENTS.md
-- [ ] `who/<me>.md` populated with my identity
-- [ ] `how/` files written (memory-discipline, token-efficiency, weekly-audit)
-- [ ] `CLAUDE.md` created in project root with my context
-- [ ] `.env` created with all credentials (permissions restricted to 600)
-- [ ] `.mcp.json` configured with chosen MCP servers
-- [ ] Wrapper scripts created and marked executable (`chmod +x`)
-- [ ] Scheduled triggers created (weekly audit + any expiry reminders)
-- [ ] Claude Code restarted to load new settings and MCP servers
-- [ ] Test: send a Slack message, query Jira, or perform a basic action to confirm MCPs are working
+- [ ] `who/user.md` populated with identity
+- [ ] All `how/`, `fix/` files written
+- [ ] `CLAUDE.md` in project root with session checklist
+- [ ] `.env` populated; permissions `chmod 600 .env`
+- [ ] `.gitignore` covers `.env` and `ca-bundle.pem`
+- [ ] `.mcp.json` configured with chosen servers
+- [ ] Wrapper scripts executable (`chmod +x *.sh`)
+- [ ] `sync-memory.sh` executable and tested
+- [ ] Remote triggers created (weekly audit + expiry reminders)
+- [ ] Claude Code restarted to load new settings + MCPs
+- [ ] Test: basic Slack/GitHub action confirms MCPs are working
+- [ ] Session crons start automatically (verify with `CronList` in next session)
 
 ---
 
-## KNOWN OBSTACLES & FIXES
+## TROUBLESHOOTING
 
-### "invalid_auth" on Slack calls
-Slack tokens expired. Re-extract `xoxc` and `xoxd` tokens from the Slack desktop app, update `.env`, then run `/mcp` in Claude Code to restart.
+**`invalid_auth` on Slack calls**
+Tokens expired. Run self-heal: re-extract → kill container → retry.
+If still failing, Slack desktop is signed out — sign back in and re-extract.
 
-### x509 / TLS certificate error on Slack
-Docker container missing a root CA (common on corporate/enterprise Slack domains using Let's Encrypt). Fix: export macOS system CA bundle to `ca-bundle.pem` and mount it into the Docker container (see Slack MCP setup, Step 2). Restart Claude Code after.
+**x509 / TLS certificate error**
+Mount `ca-bundle.pem` into Docker container (see fix/slack-tls.md). Regenerate after macOS updates.
 
-### MCP server not loading
-- Confirm `enableAllProjectMcpServers: true` is in `.claude/settings.local.json`
-- Confirm `.mcp.json` is in the project root directory
-- Confirm wrapper scripts are executable (`chmod +x *.sh`)
-- Restart Claude Code fully (not just a new chat)
+**Slack desktop app signs out repeatedly (~every 20 min)**
+Almost always caused by a malformed User-Agent in `.env` (embedded `"` splitting the value).
+Run extraction script, verify UA is a single clean string, restart Slack MCP container.
 
-### Docker "cannot connect to daemon"
-Docker Desktop is not running. Start it from Applications, wait for it to fully start, then restart Claude Code.
+**MCP server not loading at session start**
+- Confirm `enableAllProjectMcpServers: true` in `.claude/settings.local.json`
+- Confirm `.mcp.json` is in project root (not a subdirectory)
+- Confirm wrapper scripts are executable: `chmod +x *.sh`
+- Fully restart Claude Code (not just new chat)
 
-### RemoteTrigger "body type is expected as record but provided as string"
-The trigger body was accidentally serialized as a string. Ask Claude to retry — the tool requires a JSON object, not a string. This is a transient serialization issue.
+**GitHub MCP tools missing**
+Image not pre-pulled: `docker pull ghcr.io/github/github-mcp-server` then restart.
 
-### Tool calls still require approval despite bypassPermissions
-Two possible causes:
-1. **Claude Code was already open when you created the settings file** — fully close and reopen it (not just a new chat). The settings file is read at startup.
-2. **Settings file is in the wrong place** — it must be at `YOUR_PROJECT_DIR/.claude/settings.local.json`, not in your home directory or elsewhere. Verify with: `cat YOUR_PROJECT_DIR/.claude/settings.local.json`
+**`conversations.open` returns `invalid_auth`**
+The User-Agent header is required for session-token Slack API calls. Ensure all three headers
+(Authorization, Cookie, User-Agent) are present in the curl command.
 
-### uvx command not found
-`uv` is not installed. Install with: `brew install uv` (macOS) or `pip install uv`. Then restart your terminal and Claude Code.
+**Remote trigger body error**
+The trigger body must be a JSON object, not a string. Ask Claude to retry.
 
----
-
-## ONGOING USAGE NOTES
-
-- **Memory is persistent** — facts you tell Claude in one session are available in future sessions via the memory palace.
-- **Teach as you go** — if Claude does something wrong, correct it and it will save the correction as a `feedback` memory.
-- **Trust but verify** — memory can become stale. The weekly audit catches this, but if a memory seems wrong, ask Claude to verify it against current sources.
-- **Logs are your audit trail** — the changelog and actionlog give you a full record of what Claude changed and what actions it took externally.
-- **The assistant improves over time** — the more context you give it, the more useful it becomes. Add contacts, rules, and project context liberally.
+**Tool calls still require approval despite bypassPermissions**
+Settings file read at startup — fully close and reopen Claude Code (not just new chat).
+Verify file is at `YOUR_PROJECT_DIR/.claude/settings.local.json`.
 
 ---
 
-*End of bootstrap prompt. Start here — paste everything above this line into your Claude Code session.*
+*Source template: https://github.com/mmoazez-cwbg/claude_personal-test*
+*Customize all placeholder values before use. Never commit this file with real credentials.*
