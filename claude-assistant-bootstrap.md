@@ -1,9 +1,9 @@
 # Claude Ops Assistant — Bootstrap & Setup Guide
 
 > **How to use this file:**
-> Open a new Claude Code session in your project directory and run:
-> `Prompt: Parse through /path/to/claude-assistant-bootstrap.md and execute the changes.`
-> Claude will read this file, propose a setup plan, and walk you through it interactively.
+> Save this file to your project directory, open a new Claude Code session there, and run:
+> `Prompt: Parse through /path/to/claude-assistant-bootstrap.md, see if there are any optimizations, improvements, useful inclusions, summarize these and ask the user what they would like to do.`
+> Claude will review the file, propose improvements, then walk you through setup interactively.
 >
 > **Prerequisites:**
 > - Claude Code installed
