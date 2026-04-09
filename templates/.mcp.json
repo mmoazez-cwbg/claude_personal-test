@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "slack": {
+      "command": "bash",
+      "args": ["/PATH/TO/YOUR/PROJECT/slack-mcp-wrapper.sh"]
+    },
+    "github": {
+      "command": "bash",
+      "args": ["/PATH/TO/YOUR/PROJECT/github-mcp-wrapper.sh"]
+    }
+  }
+}
